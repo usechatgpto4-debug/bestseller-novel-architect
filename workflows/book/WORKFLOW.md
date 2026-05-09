@@ -22,6 +22,7 @@ Follow these steps sequentially. Do not skip ahead.
 ### 2. Script Generation
 - Once the user provides the requirements, generate a Python script named `generate_novel.py` in the root of the project.
 - The script MUST use the `google-genai` library and the **gemini-3.1-pro-preview** model.
+- The script MUST use `generate_content_stream` (streaming) for all text generation calls to the Gemini API. Only structured JSON schema calls (outline generation) may use non-streaming `generate_content`.
 - You must structure the Python script based on the blueprint found in `bestseller-novel-architect/examples/python/automated_gemini_generator.py`.
 - The script must include structured Pydantic outputs for Character and Outline generation, and a loop to generate a Prologue and chapters sequentially based on the outline.
 - **CRITICAL**: The script MUST include an **Auto-Retry Logic** (in case of empty or blocked API responses) and a **Chapter/Prologue Caching** mechanism (to save intermediate chapters to text files and prevent data loss).
@@ -29,8 +30,11 @@ Follow these steps sequentially. Do not skip ahead.
 
 ### 3. Execution & Verification
 - Instruct the user to ensure they have their `GEMINI_API_KEY` set in their environment variables.
-- Propose running the following command to install dependencies and execute the script. Use `python -m pip` for better Windows compatibility, and run the script with `-u` unbuffered mode directing to a log file:
-  `python -m pip install google-genai pydantic python-docx; python -u generate_novel.py > generation_log.txt 2>&1`
+- Install all required dependencies first:
+  `python -m pip install google-genai pydantic python-docx fastapi uvicorn`
+- **Start the Pixel Dashboard** to provide a real-time log viewer UI:
+  `python pixel_dashboard/pixel_dashboard_poc.py`
+- The dashboard runs at `http://127.0.0.1:8000`. Open the browser and instruct the user to click the **[ 📖 สร้างหนังสือ 5 บท ]** button to start the pipeline.
+- The dashboard will run `generate_novel.py` as a subprocess and stream all output (including Gemini API streaming chunks) to the browser in real-time via WebSocket.
 - *Wait for user approval before running the command.*
-- Inform the user that they can monitor the progress in real-time by viewing `generation_log.txt`.
-- Once completed, provide the user with the path to the compiled `.docx` file.
+- Once the pipeline completes, the dashboard will display "เขียนหนังสือเสร็จสิ้น!" and the compiled `.docx` file will be available in the project root.
